@@ -1,9 +1,10 @@
 class Rotor
     def initialize(key, date)
         @key = key
-        @setting = spool(("a".."z").to_a, 0, [])
+        abcs = ("a".."z").to_a
         tmp = (date**2).to_s
-        @notches = [tmp[-2..-1], tmp[-4..-3], tmp[-6..-5], tmp[-8..-7]]
+        @notches = [abcs[tmp[-2..-1].to_i], abcs[tmp[-4..-3].to_i], abcs[tmp[-6..-5].to_i], abcs[tmp[-8..-7].to_i]]
+        @setting = spool(abcs, 0, [])
         @current = 0
         require 'pry';binding.pry
     end
