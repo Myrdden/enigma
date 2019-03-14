@@ -1,20 +1,46 @@
 class Rotor
-    def initialize(key, date)
+    def initialize(key, initial) #:: String, Int
         @key = key
-        abcs = ("A".."Z").to_a
-        tmp = (date**2).to_s
-        @notches = [abcs[tmp[-2..-1].to_i % 26], abcs[tmp[-4..-3].to_i % 26], abcs[tmp[-6..-5].to_i % 26], abcs[tmp[-8..-7].to_i % 26]].uniq
-        @setting = spool(abcs, 0, [])
-        @current = 0
+        @initial = initial % 26
+        case key
+        when /^[01]/
+            @setting = spool_I(("A".."Z").to_a, 0, [])
+        when /^[23]/
+
+        when /^[45]/
+
+        when /^[67]/
+
+        when /^[89]/
+
+        end
+        @notches =
+        @current = @initial
     end
-    def spool(inp, i, out)
+    def spool_I(inp, i, out)
         if inp.empty?
             return out
         else
-            i = (i + @key) % inp.size
+            i = (@key[0].to_i.even? ? (i + @key.to_i) : (i - @key.to_i)) % inp.size
             out.push(inp.slice!(i))
             return spool(inp, i, out)
         end
+    end
+    def spool_II()
+        if inp.empty?
+            return out
+        else
+            
+        end
+    end
+    def spool_III()
+
+    end
+    def spool_IV()
+
+    end
+    def spool_V()
+
     end
     def step
         forward = @notches.any? {|x| @setting[@current] == x} ? true : false
@@ -22,8 +48,8 @@ class Rotor
         @current = 0 if @current > 25
         return forward
     end
-    def reset
-        @current = 0
+    def set()
+        @current = @initial
     end
     def forward(inp)
         return @setting[(inp.ord - 65)]
