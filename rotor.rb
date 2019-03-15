@@ -14,7 +14,10 @@ class Rotor
         when /^[89]/
 
         end
-        @notches =
+        notchA = (key.to_i * initial) % 26
+        notchB = (((key[1].to_i * 10) + key[0].to_i) * initial) % 26
+        notchB = (notchB + 13) % 26 if notchA == notchB
+        @notches = [notchA, notchB]
         @current = @initial
     end
     def spool_I(inp, i, out)
@@ -30,7 +33,7 @@ class Rotor
         if inp.empty?
             return out
         else
-            
+
         end
     end
     def spool_III()
