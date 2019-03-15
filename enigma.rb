@@ -30,8 +30,17 @@ class Enigma
         end
     end
     def encrypt(msg) #::String -> String
+        steps = @rotors.map {|x| false}
+        steps[0] = true
         return encode(msg.to_a, []).map do |x|
-
+            @rotors.each {|i| i.forward(x)}
+            x = @reflector.forward(x)
+            j = 0
+            @rotors.each do |i|
+                x = i.reverse(x)
+                steps[j+1] = i.step if steps[j]
+                j += 1
+            end
         end.to_s
     end
     def decrypt(msg) #:: String -> String
