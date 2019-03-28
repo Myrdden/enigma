@@ -4,40 +4,57 @@ require './lib/stecker'
 
 class Enigma
   extend TailRec
+
+  X_CODES = {'\s' => "X", 'X' => "XX", '.' => "XXX"}
+
   attr_reader :key
   def initialize(numRotors = nil, key = nil) #:: Int, String
     numRotors = numRotors || (key ? (key.size / 4) : 3)
     @key = key || generate_key(numRotors)
     @key.split(/\d{4}/).to_a.each do |i|
     @rotors << Rotor.new(@key[0..1], @key[2..3].to_i)
-    end
     @reflector = Rotor.new(@key[-4..-3], @key[-2..-1].to_i)
   end
 
   def generate_key(numRotors) #:: Int -> Int
-    return Random.rand(("1"+("0" * ((numRotors + 1) * 4 - 1))).to_i\
-                         ..("9" * ((numRotors + 1) * 4)).to_i).to_s
+    return Random.rand(("1" + ("0" * ((numRotors + 1) * 4 - 1))).to_i\
+                           ..("9" * ((numRotors + 1) * 4)).to_i).to_s
   end
 
   rec def encode(inp, out) #::String -> String
-    if inp.empty?
-    return out
-    else
+    return out if inp.empty?
     case inp.last
-    when 'X'
-      out = ['X','X'] + encode(inp.drop(1), out)
+    when /[X\s.]/
+      out << X_CODES[inp.last]
     when ('A'..'Z')
-      out = inp.pop + encode(inp, out)
-    when ' ' #Space
-      out = ['X'] + encode(inp.drop(1), out)
-    when '.' #Stop
-      out = ['X','X','X'] + encode(inp.drop(1), out)
-    else
-      out = encode(inp.drop(1), out)
+      out << inp.last
     end
-    return out
-    end
+    encode(inp[1..-1], out)
   end
+
+  rec def decode(inp, out) #::String -> String
+    return out if inp.empty?
+    case inp.last
+    when ('A'..'Z')
+      out << inp.last
+      inp = inp[1..-1]
+    when 'X'
+      if inp[-2] == 'X'
+        if inp[-3] == 'X'
+          out << '.'
+          inp = inp[3..-1]
+        else
+          out << 'X'
+          inp = inp[2..-1]
+        end
+      else
+        out << ' '
+        inp = inp[1..-1]
+      end
+    end
+    decode(inp, out)
+  end
+
   def encrypt(msg) #::String -> String
     return encode(msg.to_a, []).map do |x|
       #Pass into stecker
