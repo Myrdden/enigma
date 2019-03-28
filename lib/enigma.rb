@@ -11,8 +11,8 @@ class Enigma
   def initialize(numRotors = nil, key = nil) #:: Int, String
     numRotors = numRotors || (key ? (key.size / 4) : 3)
     @key = key || generate_key(numRotors)
-    @key.split(/\d{4}/).to_a.each do |i|
-    @rotors << Rotor.new(@key[0..1], @key[2..3].to_i)
+    @key.split(/\d{4}/).to_a.each \
+      {|i| @rotors << Rotor.new(i[0..1], i[2..3].to_i)}
     @reflector = Rotor.new(@key[-4..-3], @key[-2..-1].to_i)
   end
 
@@ -23,36 +23,56 @@ class Enigma
 
   rec def encode(inp, out) #::String -> String
     return out if inp.empty?
-    case inp.last
+    x, *xs = inp
+    case x
     when /[X\s.]/
-      out << X_CODES[inp.last]
+      out << X_CODES[x]
     when ('A'..'Z')
-      out << inp.last
+      out << x
     end
-    encode(inp[1..-1], out)
+    encode(xs, out)
   end
 
   rec def decode(inp, out) #::String -> String
     return out if inp.empty?
-    case inp.last
+    x, *xs = inp
+    case x
     when ('A'..'Z')
-      out << inp.last
-      inp = inp[1..-1]
+      out << x
     when 'X'
-      if inp[-2] == 'X'
-        if inp[-3] == 'X'
+      if xs[-1] == 'X'
+        if xs[-2] == 'X'
           out << '.'
-          inp = inp[3..-1]
+          xs = xs[2..-1]
         else
           out << 'X'
-          inp = inp[2..-1]
+          xs = xs[1..-1]
         end
       else
         out << ' '
-        inp = inp[1..-1]
       end
     end
-    decode(inp, out)
+    decode(xs, out)
+  end
+
+  def encrypt(msg) #::String -> String
+    xs = encode(msg.to_a, [])
+    return _encrypt(xs, []).to_s
+  end
+
+  rec def _encrypt(inp, out)
+    return out if inp.empty?
+    x, *xs = inp
+    #pass into stecker
+    @rotors.each {|r| r.forward(x)}
+    x = @reflector.forward(x)
+    step = true
+    @rotors.each do |r|
+      x = r.reverse(x)
+      step = r.step! if step
+    end
+    #pass out of stecker
+    _encrypt(xs, out)
   end
 
   def encrypt(msg) #::String -> String
@@ -84,22 +104,5 @@ class Enigma
       end
       #Pass out of stecker
     end, [])
-  end
-  def decode(inp, pop) #::[Char] -> [Char]
-    if inp.empty?
-      return out
-    else
-      case inp.last
-      when 'X'
-        out = [' '] + decode(inp.drop(1), out) if inp[-2] != 'X'
-        out = ['X'] + decode(inp.drop(2), out) if inp[-2] == 'X' && inp[-3] != 'X'
-        out = ['.'] + decode(inp.drop(3), out) if inp[-2] == 'X' && inp[-3] == 'X' && inp[-4] == 'X'
-      when ('A'..'Z')
-        out = inp.pop + decode(inp, out)
-      else
-        out = decode(inp.pop, out)
-      end
-      return out
-    end
   end
 end

@@ -54,6 +54,6 @@ class Rotor
     end
 
     def reset!
-        @current = @initial
+      @current = @initial
     end
 end
