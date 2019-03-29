@@ -3,6 +3,5 @@ class Stecker
     @steckers = {}
   end
 
-  def pair(x) #:: Char -> Char
-    {return @steckers[:x]}
+  def pair(x) return @steckers[:x] end
 end

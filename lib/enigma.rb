@@ -1,4 +1,5 @@
 require './lib/decor/rec'
+require './lib/decor/sym-with-args'
 require './lib/rotor'
 require './lib/stecker'
 
@@ -55,16 +56,16 @@ class Enigma
     decode(xs, out)
   end
 
-  def encrypt(msg) #::String -> String
-    xs = encode(msg.to_a, [])
-    return _encrypt(xs, []).to_s
-  end
+  # def encrypt(msg) #::String -> String
+  #   xs = encode(msg.to_a, [])
+  #   return _encrypt(xs, []).to_s
+  # end
 
-  rec def _encrypt(inp, out)
+  rec def encrypt(inp, out)
     return out if inp.empty?
     x, *xs = inp
     #pass into stecker
-    @rotors.each {|r| r.forward(x)}
+    @rotors.each(&:forward.(x))
     x = @reflector.forward(x)
     step = true
     @rotors.each do |r|
@@ -72,23 +73,9 @@ class Enigma
       step = r.step! if step
     end
     #pass out of stecker
-    _encrypt(xs, out)
+    encrypt(xs, out)
   end
 
-  def encrypt(msg) #::String -> String
-    return encode(msg.to_a, []).map do |x|
-      #Pass into stecker
-      @rotors.each {|i| i.forward(x)}
-      x = @reflector.forward(x)
-      j = 0
-      @rotors.each do |i|
-        x = i.reverse(x)
-        steps[j+1] = i.step if steps[j]
-        j += 1
-      end
-      #Pass out of stecker
-    end.to_s
-  end
   def decrypt(msg) #:: String -> String
     steps = @rotors.map {|x| false}
     steps[0] = true
